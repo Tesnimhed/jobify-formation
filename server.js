@@ -1,8 +1,10 @@
+import 'express-async-errors';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import express from 'express'
 const app = express();
 import jobRouter from './routes/jobRouter.js';
+import mongoose from 'mongoose'; 
 
 app.use(express.json()); //middleware => req.body
 
@@ -13,7 +15,19 @@ app.get('/', (req, res) => {
 
 app.use('/api/v1/jobs', jobRouter);
 
-const PORT = process.env.PORT ;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);          
+app.use((err, req, res, next) => { 
+  console.log(err); 
+  res.status(500).json({ msg: 'something went wrong' }); 
 });
+
+const port = process.env.PORT || 3000;
+try { 
+  await mongoose.connect(process.env.MONGO_URL); 
+  console.log('connected to mongoDB');
+  app.listen(port, () => { 
+    console.log(`server running on PORT ${port}....`); 
+  }); 
+} catch (error) { 
+  console.log(error); 
+  process.exit(1); 
+} 
